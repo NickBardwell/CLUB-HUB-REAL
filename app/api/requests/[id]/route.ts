@@ -4,6 +4,7 @@ import { env } from 'cloudflare:workers';
 import { getDb } from '@/db';
 import { requests } from '@/db/schema';
 import { identity,sameOrigin } from '@/lib/access';
+import { classifyApprovedClub } from '@/lib/club-category';
 import { validTransition } from '@/lib/workflow';
 import { canReviewClub } from '@/lib/club-access';
 export const dynamic='force-dynamic';
@@ -22,8 +23,9 @@ export async function PATCH(request:Request,{params}:{params:Promise<{id:string}
   if(reviewer&&status!=='withdrawn'&&!note)return NextResponse.json({error:'Add a note for the student.'},{status:400});
   if(status==='approved'&&body.confirmed!==true)return NextResponse.json({error:current.type==='proposal'?'Confirm Student Life recognition before approving.':'Confirm membership has been recorded in Involve before approving.'},{status:400});
   if(!reviewer&&status==='in_review'&&!note)return NextResponse.json({error:'Add the requested information before replying.'},{status:400});
+  const category=status==='approved'&&current.type==='proposal'?classifyApprovedClub(current.clubName,current.message):current.category;
   const now=new Date().toISOString(),noteText=status==='withdrawn'?'Student withdrew this request.':note,db=env.DB!;
-  const batch=[db.prepare('UPDATE requests SET status=?, reviewer_note=?, updated_at=?, active_key=? WHERE id=? AND status=? AND updated_at=?').bind(status,noteText,now,['rejected','withdrawn'].includes(status)?null:current.activeKey,id,current.status,current.updatedAt),
+  const batch=[db.prepare('UPDATE requests SET status=?, reviewer_note=?, updated_at=?, active_key=?, category=? WHERE id=? AND status=? AND updated_at=?').bind(status,noteText,now,['rejected','withdrawn'].includes(status)?null:current.activeKey,category,id,current.status,current.updatedAt),
    db.prepare('INSERT INTO request_events (id,request_id,actor_id,status,note,created_at) SELECT ?,id,?,?,?,? FROM requests WHERE id=? AND updated_at=?').bind(crypto.randomUUID(),user.userId,status,noteText,now,id,now)];
   if(status==='approved'&&current.type==='application')batch.push(db.prepare('INSERT INTO memberships (id,club_id,user_id,created_at,status) SELECT ?,club_id,user_id,?,? FROM requests WHERE id=? AND status=? AND updated_at=? ON CONFLICT(club_id,user_id) DO UPDATE SET status=excluded.status,created_at=excluded.created_at').bind(crypto.randomUUID(),now,'active',id,'approved',now));
   const result=await db.batch(batch);
