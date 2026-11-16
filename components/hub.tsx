@@ -53,7 +53,7 @@ export default function Hub(){
   {builder&&<Modal title="Club Builder" onClose={()=>setBuilder(false)} wide><ClubBuilder/></Modal>}
   {success&&<Modal title="Request received" onClose={()=>setSuccess(null)}><div className="success-body"><span className="success-icon"><CheckCircle2 size={38}/></span><span className="eyebrow muted">YOU’VE TAKEN THE FIRST STEP</span><h2>Good things start<br/>with showing up.</h2><p>Your request for <strong>{success.name}</strong> is saved and waiting for review. This is not yet a confirmed membership or official club recognition.</p><span className="reference-id">Reference {success.id.slice(0,8).toUpperCase()}</span><button className="button primary" onClick={()=>{setSuccess(null);setPane('requests');}}>Track my request <ArrowRight size={17}/></button><small>Updates appear in My requests. Email notifications are not enabled.</small></div></Modal>}
   {toast&&<div role="status" className="toast"><CheckCircle2 size={18}/>{toast}</div>}
- {pane==='discover'&&<button className="button primary" style={{position:'fixed',right:24,bottom:24,zIndex:20}} onClick={()=>setBuilder(true)}><Sparkles size={17}/>Club Builder</button>}
+
  </div>;
 }
 
