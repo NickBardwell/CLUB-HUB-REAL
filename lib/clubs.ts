@@ -3,6 +3,7 @@ export type Club = {
   kind: 'club' | 'resource'; website: string | null; source: string;
   verified: boolean; joinMethod: 'unconfirmed' | 'self' | 'review';
   members: number | null; joinUrl?: string;
+  sampleProfile?: { members: number; representative: string; role: string };
   greekDivision?: 'Sorority' | 'Fraternity';
 };
 
@@ -74,11 +75,15 @@ const greekDivisions: Record<string, Club['greekDivision']> = {
   'kappa-delta': 'Fraternity',
 };
 
-export const clubs: Club[] = entries.map(([id,name,category,description,icon,website,verified,resource]) => ({
+// Fictional display examples only; these never grant organizer access or create memberships.
+const sampleNames = ['Jordan Ellis', 'Taylor Brooks', 'Morgan Reed', 'Casey Bennett', 'Avery Collins', 'Riley Hayes', 'Cameron Parker', 'Quinn Foster', 'Alex Monroe', 'Sam Carter', 'Jamie Rivers', 'Drew Lawson'];
+
+export const clubs: Club[] = entries.map(([id,name,category,description,icon,website,verified,resource], index) => ({
   id,name,category:categories[category],description,icon,website,
   kind:resource?'resource':'club',verified:!!verified,
   source:verified?'University or organization reference':id==='turning-point'?'LSU Baton Rouge fallback':'Supplied student reference · needs confirmation',
   joinMethod:'unconfirmed',members:null,greekDivision:greekDivisions[id],
+  sampleProfile: resource ? undefined : { members: 12 + ((index * 17 + 23) % 89), representative: sampleNames[index % sampleNames.length], role: 'Student representative' },
 }));
 
 export type ClubOverride = {clubId:string; members:number|null; joinMethod:string; joinUrl:string|null; verifiedAt:string;};
