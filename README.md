@@ -4,7 +4,7 @@ A responsive student organization directory for LSU Alexandria, with 59 supplied
 
 ## Live website
 
-https://lsua-club-hub-nbardwell.fairjive2.chatgpt.site
+https://club-hub-real.bardwell685.workers.dev/
 
 The live URL is hosted on Sites; uploading the source to GitHub does not itself provision hosting on NickBardwell.com. GitHub Pages alone cannot run the database and protected review workflow.
 
