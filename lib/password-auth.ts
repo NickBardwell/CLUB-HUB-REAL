@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers';
+import { ensureDatabase } from './database-setup';
 import { randomToken,tokenHash } from './password-crypto';
 export const SESSION_COOKIE='__Host-clubhub_session';
 export const SESSION_SECONDS=60*60*24*7;
@@ -6,6 +7,7 @@ export type PasswordUser={id:string;name:string;email:string;role_verified:numbe
 export async function authDb(){
  if(!env.DB)throw new Error('Account storage is unavailable.');
  const db=env.DB;
+ await ensureDatabase();
  // Independent, additive tables; existing memberships and requests are untouched.
  await db.batch([
   db.prepare('CREATE TABLE IF NOT EXISTS auth_users (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, name TEXT NOT NULL, password_hash TEXT NOT NULL, role_verified INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL)'),
