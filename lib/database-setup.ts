@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers';
+import { seedDemoRequests } from './demo-requests';
 const ready=new WeakSet<object>();
 // Safe first-run initialization for standalone Cloudflare deployments.
 // Existing accounts, memberships, requests, and assignments are never replaced.
@@ -26,5 +27,6 @@ export async function ensureDatabase():Promise<void>{
    if(!latest.results.some(column=>column.name==='status'))throw error;
   }
  }
+ await seedDemoRequests(db);
  ready.add(db);
 }
