@@ -7,9 +7,9 @@ import { identity,sameOrigin } from '@/lib/access';
 import { validLsuaEmail } from '@/lib/workflow';
 export const dynamic='force-dynamic';
 export async function GET() {
- const {user,admin}=await identity();
- if(!user||!admin)return NextResponse.json({error:'Reviewer access required.'},{status:403});
- try{return NextResponse.json({requests:await getDb().select().from(requests).orderBy(desc(requests.createdAt))},{headers:{'Cache-Control':'private, no-store'}});}catch{return NextResponse.json({error:'Unable to load requests.'},{status:503});}
+ const {user,admin,proposalViewer}=await identity();
+ if(!user||(!admin&&!proposalViewer))return NextResponse.json({error:'Reviewer access required.'},{status:403});
+ try{return NextResponse.json({requests:await getDb().select().from(requests).where(admin?undefined:eq(requests.type,'proposal')).orderBy(desc(requests.createdAt))},{headers:{'Cache-Control':'private, no-store'}});}catch{return NextResponse.json({error:'Unable to load requests.'},{status:503});}
 }
 export async function POST(request:Request) {
  if(!sameOrigin(request))return NextResponse.json({error:'Please submit using Club Hub.'},{status:403});
