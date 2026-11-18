@@ -91,3 +91,14 @@ Apply both `drizzle/0000_graceful_outlaw_kid.sql` and `drizzle/0001_fearless_iro
 After building, run `node tests/run-role-api.mjs` to test authorization against an isolated local Miniflare/D1 runtime. The harness creates fictional local identities and temporary data under ignored `work/`; it never contacts production and does not weaken production authentication. It checks anonymous access, administrator-only assignment, club-scoped organizer/professor access, cross-club denials, proposal isolation, self-approval denial, membership privacy, leaving/rejoining, and revocation.
 
 Owner-configured initial organizer grants can be supplied privately through `CLUB_HUB_BOOTSTRAP_ORGANIZERS` as a JSON array of `{email, clubId, role}`. These are written to the organizer table once. The `configured_grants` ledger prevents a removed representative from being automatically re-added by the initial configuration. No actual account emails are stored in source. Apply `drizzle/0002_neat_human_torch.sql` after the earlier migrations; it adds only the empty ledger schema. Role tests verify initial scoping and durable revocation.
+
+
+## Direct Cloudflare account login
+
+The standalone Cloudflare deployment uses `/login` with Club Hub email/password account creation, and `/logout` for explicit sign-out. Legacy `/signin-with-chatgpt` links redirect to `/login`. This supersedes the older ChatGPT-hosted authentication setup described above for this standalone repository.
+
+Account and session tables (`auth_users`, `auth_sessions`, `auth_attempts`) are created additively in the existing `DB` binding on first account use; no external identity provider or email delivery service is required. Passwords use salted PBKDF2-SHA256 at the Workers Web Crypto iteration limit. Session cookies contain random opaque tokens, are Secure/HttpOnly/SameSite=Lax, expire after seven days, and are stored hashed in D1. Sign-out revokes the server session. Account and IP attempt limits are stored in D1.
+
+Email/password accounts do not prove ownership of an email address or LSUA affiliation. New accounts cannot inherit administrator or representative rights simply by entering an allowlisted email. A correct email-scoped private setup code from the existing `CLUB_BUILDER_INVITES` configuration marks the account eligible for reviewer roles; administrator allowlists and club assignments still apply. Users can supply this optional code when creating an account or signing in. Never share setup codes publicly. Existing ChatGPT-header identities are not trusted on the public Worker and are not automatically merged with password accounts.
+
+Password reset emails and recovery are not configured. Owner-assisted account recovery requires a separate verified process; no public password-reset bypass is provided.

@@ -55,3 +55,8 @@
 .theme-8,.category-tile.theme-8{--art-bg:#d7c6e6!important;--art-color:#582d83!important;--art-light:#9063cd!important}.color-8{color:#582d83}
 .sample-club-profile{display:flex;flex-direction:column;gap:7px;margin:14px 0;padding:12px;border:1px solid #d7c6e6;border-left:3px solid #ffc82c;border-radius:7px;background:#faf7fd;color:#3b1a53;font-size:12px}
 .sample-club-profile>span{display:flex;align-items:center;gap:7px}.sample-club-profile .sample-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;font-weight:750;color:#582d83}.sample-club-profile small{font-size:10px;line-height:1.5}
+
+.auth-page{min-height:100vh;display:grid;place-items:center;padding:36px 18px;background:linear-gradient(140deg,#3b1a53,#582d83)}
+.auth-card{width:min(100%,480px);padding:36px;background:#fff;border-radius:16px;border-top:6px solid #ffc82c;box-shadow:0 18px 60px #0003}
+.auth-brand{font-weight:800;color:#582d83;font-size:20px}.auth-card h1{font-size:32px;letter-spacing:-1px;margin:24px 0 12px}.auth-card p{font-size:14px;line-height:1.7}
+.auth-tabs{display:flex;gap:8px;margin:24px 0}.auth-tabs button{flex:1;padding:12px;border:1px solid #d7c6e6;border-radius:7px}.auth-tabs button[aria-pressed=true]{background:#582d83;color:white}.auth-card .auth-help{font-size:12px;color:#787480;margin:22px 0 14px}.auth-card>a:last-child{display:inline-block;color:#582d83;font-size:13px;margin-top:16px}.auth-card details{font-size:12px;line-height:1.6}.auth-card details label{margin:10px 0}.auth-card small{color:#787480}

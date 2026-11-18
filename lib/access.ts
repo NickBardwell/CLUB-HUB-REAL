@@ -4,7 +4,7 @@ export async function identity() {
  const user=await getChatGPTUser();
  // Allowlist stays on the server. The development identity is never privileged in production.
  const allow=(env.CLUB_HUB_ADMIN_EMAILS||process.env.CLUB_HUB_ADMIN_EMAILS||'').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
- const admin=!!user&&(allow.includes(user.email.toLowerCase())||(process.env.NODE_ENV==='development'&&user.email==='seedy@sites.test'));
+ const admin=!!user&&user.roleVerified&&(allow.includes(user.email.toLowerCase())||(process.env.NODE_ENV==='development'&&user.email==='seedy@sites.test'));
  return {user,admin};
 }
 export function sameOrigin(request:Request) {

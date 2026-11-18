@@ -15,7 +15,7 @@ export async function PATCH(request:Request,{params}:{params:Promise<{id:string}
   const {id}=await params;
   const [current]=await getDb().select().from(requests).where(eq(requests.id,id));
   if(!current)return NextResponse.json({error:'Request not found.'},{status:404});
-  const reviewer=admin||(current.type==='application'&&current.userId!==user.userId&&await canReviewClub(user.email,current.clubId,false));
+  const reviewer=admin||(user.roleVerified&&current.type==='application'&&current.userId!==user.userId&&await canReviewClub(user.email,current.clubId,false));
   if(!reviewer&&current.userId!==user.userId)return NextResponse.json({error:'Request not found.'},{status:404});
   const body=await request.json() as Record<string,unknown>,status=String(body.status||''),note=typeof body.note==='string'?body.note.trim().slice(0,1500):'';
   if(status==='withdrawn'&&current.userId!==user.userId)return NextResponse.json({error:'Only the applicant can withdraw a request.'},{status:403});
