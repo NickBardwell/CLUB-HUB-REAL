@@ -1,15 +1,18 @@
 import { NextResponse } from 'next/server';
 import { env } from 'cloudflare:workers';
-import { sameOrigin } from '@/lib/access';
+import { identity,sameOrigin } from '@/lib/access';
 export const dynamic='force-dynamic';
 type Invite={email:string;code:string};
 const attempts=new Map<string,{count:number;until:number}>();
 const clean=(value:unknown,max:number)=>typeof value==='string'?value.trim().slice(0,max):'';
 export async function POST(request:Request) {
  if(!sameOrigin(request))return NextResponse.json({error:'Please use Club Hub to create a plan.'},{status:403});
- if(!env.OPENAI_API_KEY||!env.CLUB_BUILDER_INVITES)return NextResponse.json({error:'Club Builder is not configured yet.'},{status:503});
- try {const body=await request.json() as Record<string,unknown>,email=clean(body.email,254).toLowerCase(),accessCode=clean(body.accessCode,160),invites=JSON.parse(env.CLUB_BUILDER_INVITES) as Invite[];
-  if(!invites.some(invite=>invite.email.toLowerCase()===email&&invite.code===accessCode))return NextResponse.json({error:'This email and invite code are not approved for Club Builder.'},{status:403});
+ try {const {user,demo}=await identity();
+  if(!env.OPENAI_API_KEY||(!demo&&!env.CLUB_BUILDER_INVITES))return NextResponse.json({error:'Club Builder is not configured yet.'},{status:503});
+  const body=await request.json() as Record<string,unknown>,email=demo&&user?user.email:clean(body.email,254).toLowerCase(),accessCode=clean(body.accessCode,160);
+  if(!demo){const invites=JSON.parse(env.CLUB_BUILDER_INVITES!) as Invite[];
+   if(!Array.isArray(invites)||!invites.some(invite=>invite.email.toLowerCase()===email&&invite.code===accessCode))return NextResponse.json({error:'This email and invite code are not approved for Club Builder.'},{status:403});
+  }
   const now=Date.now(),recent=attempts.get(email);if(recent&&recent.until>now&&recent.count>=3)return NextResponse.json({error:'Please wait 30 minutes before creating another plan.'},{status:429});attempts.set(email,{count:(recent&&recent.until>now?recent.count:0)+1,until:now+1800000});
   const name=clean(body.name,120),purpose=clean(body.purpose,1600);if(!name||!purpose)return NextResponse.json({error:'Add a club name and a short description of its purpose.'},{status:400});
   const input=`Club name: ${name}\nPurpose: ${purpose}\nWho it serves: ${clean(body.members,500)||'Not provided'}\nPotential activities: ${clean(body.activities,900)||'Not provided'}\nKeywords: ${clean(body.keywords,500)||'Not provided'}\nPotential advisor: ${clean(body.advisor,200)||'Not provided'}`;

@@ -13,13 +13,14 @@ export async function GET() {
 }
 export async function POST(request:Request) {
  if(!sameOrigin(request))return NextResponse.json({error:'Please submit using Club Hub.'},{status:403});
- const {user}=await identity();
+ const {user,demo}=await identity();
  if(!user)return NextResponse.json({error:'Sign in before submitting a request.'},{status:401});
  try {
   const data=await request.json() as Record<string,unknown>;
   const clean=(key:string,max:number)=>typeof data[key]==='string'?(data[key] as string).trim().slice(0,max):'';
   const name=clean('name',100), studentEmail=clean('studentEmail',254).toLowerCase(), message=clean('message',2000), type=clean('type',20);
-  if(!name||!validLsuaEmail(studentEmail)||!message||!['application','proposal'].includes(type)||data.consent!==true)return NextResponse.json({error:'Add your name, LSUA email, message, and consent.'},{status:400});
+  const contactAllowed=validLsuaEmail(studentEmail)||(demo&&studentEmail===user.email.toLowerCase());
+  if(!name||!contactAllowed||!message||!['application','proposal'].includes(type)||data.consent!==true)return NextResponse.json({error:'Add your name, LSUA email, message, and consent.'},{status:400});
   const clubId=clean('clubId',100),advisor=clean('advisor',200),keywords=clean('keywords',500);
   let clubName=clean('clubName',120);
   if(type==='application') {const club=(await catalogue()).find(c=>c.id===clubId);if(!club||club.kind!=='club')return NextResponse.json({error:'Choose a student club.'},{status:400});clubName=club.name;}

@@ -7,9 +7,11 @@ export async function identity() {
  const user=await getChatGPTUser();
  // Allowlist stays on the server. The development identity is never privileged in production.
  const allow=(env.CLUB_HUB_ADMIN_EMAILS||process.env.CLUB_HUB_ADMIN_EMAILS||'').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean);
- const admin=!!user&&user.roleVerified&&(allow.includes(user.email.toLowerCase())||(process.env.NODE_ENV==='development'&&user.email==='seedy@sites.test'));
- const proposalViewer=!!user&&(admin||await canViewClubProposals(user.userId));
- return {user,admin,proposalViewer};
+ // The owner explicitly promoted the existing account grant to full demo access.
+ const demo=!!user&&await canViewClubProposals(user.userId);
+ const admin=!!user&&(demo||(user.roleVerified&&(allow.includes(user.email.toLowerCase())||(process.env.NODE_ENV==='development'&&user.email==='seedy@sites.test'))));
+ const proposalViewer=!!user&&(admin||demo);
+ return {user,admin,proposalViewer,demo};
 }
 export function sameOrigin(request:Request) {
  const origin=request.headers.get('origin');
